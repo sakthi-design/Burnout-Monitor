@@ -1,0 +1,629 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Burnout AI Monitor — HR Well-being Analytics</title>
+    <meta name="description" content="AI-powered employee burnout detection and well-being monitoring for HR teams. Real-time risk scoring, sentiment analysis, and personalized wellness recommendations.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="src/styles.css">
+  </head>
+  <body>
+    <!-- ── AUTHENTICATION OVERLAY ── -->
+    <div class="auth-overlay" id="auth-overlay" style="display: flex;">
+      <div class="auth-card">
+        <div class="auth-header">
+          <div class="brand-mark" aria-hidden="true" style="box-shadow: none;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+          </div>
+          <h2>Burnout Monitor</h2>
+          <p id="auth-subtitle">Sign in to access HR well-being analytics</p>
+        </div>
+        
+        <form id="auth-form" novalidate autocomplete="off">
+          <div class="form-error-zone" id="auth-error-zone" style="margin-bottom:0" aria-live="polite"></div>
+          
+          <label class="field-label" style="display:flex;flex-direction:column;gap:6px">
+            Email Address
+            <input type="email" id="auth-email" required placeholder="name@company.com" autocomplete="username">
+          </label>
+          
+          <label class="field-label" style="display:flex;flex-direction:column;gap:6px">
+            Password
+            <input type="password" id="auth-password" required placeholder="••••••••" autocomplete="current-password">
+            <div class="pwd-strength" id="pwd-strength" style="display: none;">
+              <span class="pwd-bar"></span>
+              <span class="pwd-text">Password Strength</span>
+            </div>
+          </label>
+          
+          <label class="field-label" id="auth-role-label" style="display:none;flex-direction:column;gap:6px">
+            Role
+            <select id="auth-role">
+              <option value="user">User (HR Staff - Read Only)</option>
+              <option value="admin" selected>Admin (HR Administrator - Full Access)</option>
+            </select>
+          </label>
+          
+          <button class="primary-btn" type="submit" id="auth-submit-btn" style="width: 100%; justify-content: center; margin-top: 12px;">
+            Sign In
+          </button>
+        </form>
+        
+        <div class="auth-toggle">
+          <span id="auth-toggle-text">Don't have an account?</span>
+          <button type="button" class="link-btn" id="auth-toggle-btn">Register here</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="app-shell">
+
+      <!-- ── SIDEBAR ── -->
+      <aside class="sidebar" aria-label="Primary navigation">
+        <div class="brand-block">
+          <div class="brand-mark" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+          </div>
+          <div>
+            <p class="eyebrow">AI Well-being</p>
+            <h1>Burnout Monitor</h1>
+          </div>
+        </div>
+
+        <nav class="nav-list" aria-label="Dashboard sections">
+          <button class="nav-item active" data-section="overview" type="button" id="nav-overview">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            HR Dashboard
+          </button>
+          <button class="nav-item" data-section="employee" type="button" id="nav-employee">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            Employee View
+          </button>
+          <button class="nav-item" data-section="predictor" type="button" id="nav-predictor">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            Prediction Lab
+          </button>
+          <button class="nav-item" data-section="feedback" type="button" id="nav-feedback">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            Feedback Inbox
+          </button>
+        </nav>
+
+        <div class="sidebar-divider"></div>
+
+        <div class="sidebar-alerts-preview" id="sidebar-alerts-preview">
+          <p class="eyebrow">At-Risk Now</p>
+          <div id="sidebar-alert-chips"></div>
+        </div>
+
+        <div class="sidebar-summary">
+          <p class="eyebrow">Monitoring Window</p>
+          <strong id="monitoring-month">July 2026</strong>
+          <span id="monitoring-summary">12 employees across 6 departments</span>
+        </div>
+
+        <div class="user-profile-block" id="user-profile-block" style="display: none;">
+          <div class="user-info">
+            <div class="user-avatar" id="user-avatar">A</div>
+            <div class="user-meta">
+              <strong id="user-display-email">admin@burnout.local</strong>
+              <span id="user-display-role">Administrator</span>
+            </div>
+          </div>
+          <button class="logout-btn" id="logout-btn" type="button">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Sign Out
+          </button>
+        </div>
+      </aside>
+
+      <!-- ── MAIN ── -->
+      <main class="main-content">
+
+        <!-- TOPBAR -->
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Predictive HR Analytics</p>
+            <h2 id="page-title">HR Dashboard</h2>
+          </div>
+          <div class="topbar-actions">
+            <button id="add-employee-btn" class="secondary-btn icon-btn" type="button" title="Add Employee">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+              Add Employee
+            </button>
+            <button id="export-btn" class="secondary-btn icon-btn" type="button" title="Export CSV">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Export CSV
+            </button>
+            <label class="search-box" for="employee-search">
+              <span>Search</span>
+              <input id="employee-search" type="search" placeholder="Name, role, or department" autocomplete="off">
+            </label>
+            <button id="notification-btn" class="icon-btn ghost-btn" type="button" title="Alerts" aria-label="Open alert notifications">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+              <span class="notif-badge" id="notif-badge" aria-hidden="true">0</span>
+            </button>
+            <button id="theme-toggle" class="icon-btn ghost-btn" type="button" title="Toggle dark mode" aria-label="Toggle colour theme">
+              <span class="theme-icon theme-icon--light" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+              </span>
+              <span class="theme-icon theme-icon--dark" aria-hidden="true">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+              </span>
+            </button>
+          </div>
+        </header>
+
+        <!-- ── OVERVIEW SECTION ── -->
+        <section id="overview" class="view active" aria-labelledby="page-title">
+          <div class="metric-grid" id="metric-grid"></div>
+
+          <div class="dashboard-grid">
+            <section class="panel wide">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">Trend</p>
+                  <h3>Burnout Risk Forecast</h3>
+                </div>
+                <div class="panel-heading-controls">
+                  <div class="segmented-control" role="group" aria-label="Trend range">
+                    <button class="segment" data-trend-range="3" type="button">3M</button>
+                    <button class="segment active" data-trend-range="6" type="button">6M</button>
+                    <button class="segment" data-trend-range="12" type="button">12M</button>
+                  </div>
+                  <select id="trend-select" aria-label="Select employee for trend chart"></select>
+                </div>
+              </div>
+              <canvas id="trend-chart" height="320" aria-label="Burnout trend chart"></canvas>
+            </section>
+
+            <section class="panel">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">Distribution</p>
+                  <h3>Risk Mix</h3>
+                </div>
+              </div>
+              <canvas id="risk-chart" height="260" aria-label="Risk distribution chart"></canvas>
+              <div id="risk-legend" class="legend"></div>
+            </section>
+          </div>
+
+          <!-- Department Bar Chart -->
+          <section class="panel">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">Analytics</p>
+                <h3>Department Burnout Comparison</h3>
+              </div>
+              <span class="panel-hint">Click a bar to filter employees</span>
+            </div>
+            <canvas id="dept-chart" height="200" aria-label="Department comparison bar chart"></canvas>
+          </section>
+
+          <section class="panel">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">Departments</p>
+                <h3>Team Burnout Heatmap</h3>
+              </div>
+              <div class="panel-heading-controls">
+                <select id="dept-filter" aria-label="Filter by department">
+                  <option value="All">All Departments</option>
+                </select>
+                <div class="segmented-control" role="group" aria-label="Employee table filter">
+                  <button class="segment active" data-filter="All" type="button">All</button>
+                  <button class="segment" data-filter="Low" type="button">Low</button>
+                  <button class="segment" data-filter="Medium" type="button">Medium</button>
+                  <button class="segment" data-filter="High" type="button">High</button>
+                  <button class="segment" data-filter="Critical" type="button">Critical</button>
+                </div>
+              </div>
+            </div>
+            <div id="department-heatmap" class="heatmap"></div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">Alerts</p>
+                <h3>Employee Risk Register</h3>
+              </div>
+              <span class="table-count" id="table-count"></span>
+            </div>
+            <div class="table-wrap">
+              <table id="risk-table" aria-label="Employee risk register">
+                <thead>
+                  <tr>
+                    <th class="sortable" data-sort="name">Employee <span class="sort-arrow">↕</span></th>
+                    <th class="sortable" data-sort="department">Department <span class="sort-arrow">↕</span></th>
+                    <th class="sortable" data-sort="score">Score <span class="sort-arrow">↕</span></th>
+                    <th class="sortable" data-sort="risk">Risk <span class="sort-arrow">↕</span></th>
+                    <th>Badge</th>
+                    <th>Top Driver</th>
+                    <th>Recommendation</th>
+                  </tr>
+                </thead>
+                <tbody id="employee-table"></tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+
+        <!-- ── EMPLOYEE VIEW ── -->
+        <section id="employee" class="view" aria-labelledby="page-title">
+          <div class="employee-layout">
+            <section class="panel profile-panel">
+              <label class="field-label" for="employee-select">Select Employee</label>
+              <select id="employee-select"></select>
+              <div id="employee-profile" class="employee-profile"></div>
+            </section>
+
+            <section class="panel wide">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">Personal Dashboard</p>
+                  <h3>Well-being Timeline</h3>
+                </div>
+                <div class="segmented-control" role="group" aria-label="Employee trend range">
+                  <button class="segment" data-emp-trend-range="3" type="button">3M</button>
+                  <button class="segment active" data-emp-trend-range="6" type="button">6M</button>
+                  <button class="segment" data-emp-trend-range="12" type="button">12M</button>
+                </div>
+              </div>
+              <canvas id="employee-chart" height="280" aria-label="Employee burnout timeline"></canvas>
+            </section>
+          </div>
+
+          <section class="panel">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">Actions</p>
+                <h3>Personalized Wellness Recommendations</h3>
+              </div>
+            </div>
+            <div id="recommendation-list" class="recommendation-grid"></div>
+          </section>
+        </section>
+
+        <!-- ── PREDICTION LAB ── -->
+        <section id="predictor" class="view" aria-labelledby="page-title">
+          <div class="predictor-layout">
+            <form id="prediction-form" class="panel predictor-form" novalidate>
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">Model Input</p>
+                  <h3>Burnout Prediction Engine</h3>
+                </div>
+              </div>
+
+              <div class="form-grid">
+                <label class="field-label">
+                  Work hours per day
+                  <input name="work_hours" id="f-work-hours" type="number" min="0" max="16" step="0.5" value="9">
+                </label>
+                <label class="field-label">
+                  Overtime hours per day
+                  <input name="overtime_hours" id="f-overtime" type="number" min="0" max="8" step="0.5" value="2">
+                </label>
+                <label class="field-label">
+                  Monthly leave days
+                  <input name="leave_days" id="f-leave" type="number" min="0" max="20" step="1" value="1">
+                </label>
+                <label class="field-label">
+                  Weekly meeting hours
+                  <input name="meeting_hours" id="f-meetings" type="number" min="0" max="40" step="1" value="10">
+                </label>
+                <label class="field-label">
+                  Task load
+                  <input name="task_load" id="f-task-load" type="range" min="0" max="100" value="78">
+                  <span class="range-value" data-range-value="task_load">78</span>
+                </label>
+                <label class="field-label">
+                  Task completion rate
+                  <input name="completion_rate" id="f-completion" type="range" min="0" max="100" value="72">
+                  <span class="range-value" data-range-value="completion_rate">72</span>
+                </label>
+                <label class="field-label">
+                  Job satisfaction
+                  <input name="job_satisfaction" id="f-satisfaction" type="range" min="0" max="100" value="44">
+                  <span class="range-value" data-range-value="job_satisfaction">44</span>
+                </label>
+                <label class="field-label">
+                  Self-reported stress
+                  <input name="stress_level" id="f-stress" type="range" min="0" max="100" value="70">
+                  <span class="range-value" data-range-value="stress_level">70</span>
+                </label>
+              </div>
+
+              <label class="field-label">
+                Employee feedback
+                <textarea name="feedback" id="f-feedback" rows="4">I feel overwhelmed and exhausted because meetings and deadlines keep increasing.</textarea>
+              </label>
+
+              <div class="form-actions">
+                <button class="primary-btn" type="submit" id="predict-btn">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                  Predict Burnout Risk
+                </button>
+                <button class="secondary-btn" type="button" id="clear-history-btn">Clear History</button>
+              </div>
+            </form>
+
+            <section class="panel result-panel">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">Prediction</p>
+                  <h3>Risk Result</h3>
+                </div>
+              </div>
+              <div id="prediction-result" class="prediction-result"></div>
+            </section>
+          </div>
+
+          <!-- Prediction History -->
+          <section class="panel" id="history-panel">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">Session Log</p>
+                <h3>Prediction History</h3>
+              </div>
+              <button class="secondary-btn" type="button" id="export-history-btn">Export History CSV</button>
+            </div>
+            <div id="prediction-history" class="history-list">
+              <p class="history-empty">No predictions yet. Run the engine above to start logging.</p>
+            </div>
+          </section>
+        </section>
+
+        <!-- ── FEEDBACK INBOX ── -->
+        <section id="feedback" class="view" aria-labelledby="page-title">
+          <section class="panel">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">NLP Monitoring</p>
+                <h3>Anonymous Feedback Sentiment</h3>
+              </div>
+              <div class="segmented-control" role="group" aria-label="Sentiment filter">
+                <button class="segment active" data-sentiment-filter="All" type="button">All</button>
+                <button class="segment" data-sentiment-filter="Negative" type="button">Negative</button>
+                <button class="segment" data-sentiment-filter="Neutral" type="button">Neutral</button>
+                <button class="segment" data-sentiment-filter="Positive" type="button">Positive</button>
+              </div>
+            </div>
+            <div id="feedback-list" class="feedback-list"></div>
+          </section>
+        </section>
+
+      </main>
+    </div>
+
+    <!-- ── NOTIFICATION PANEL ── -->
+    <div class="notif-overlay" id="notif-overlay" aria-hidden="true"></div>
+    <aside class="notif-panel" id="notif-panel" aria-label="Alert notifications" aria-hidden="true">
+      <div class="notif-header">
+        <h3>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          At-Risk Alerts
+        </h3>
+        <button class="ghost-btn" id="close-notif-btn" type="button" aria-label="Close notifications">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div id="notif-list" class="notif-list"></div>
+    </aside>
+
+     <!-- ── ADD EMPLOYEE MODAL ── -->
+    <div class="modal-overlay" id="modal-overlay" aria-hidden="true">
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <div class="modal-header">
+          <div>
+            <p class="eyebrow" style="color:var(--teal)">HR Administration</p>
+            <h3 id="modal-title">Add New Employee</h3>
+          </div>
+          <button class="ghost-btn" id="close-modal-btn" type="button" aria-label="Close modal">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+
+        <div class="modal-tabs" role="tablist">
+          <button class="modal-tab active" data-modal-tab="add" type="button" role="tab" aria-selected="true">Add Employee</button>
+          <button class="modal-tab" data-modal-tab="edit" type="button" role="tab" aria-selected="false">Edit Profile</button>
+          <button class="modal-tab" data-modal-tab="weekly" type="button" role="tab" aria-selected="false">Weekly Update</button>
+        </div>
+
+        <form id="add-employee-form" novalidate autocomplete="off">
+          <div class="modal-body">
+            <div class="modal-two-col" id="modal-grid-container">
+
+              <!-- LEFT — form fields -->
+              <div class="modal-fields">
+
+                <!-- Selector row (visible for Edit & Weekly tab) -->
+                <div class="modal-section" id="m-sec-selector" style="display: none;">
+                  <p class="modal-section-label">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    Select Target Employee
+                  </p>
+                  <label class="field-label" style="grid-column: 1 / -1;">
+                    Employee Registry List
+                    <select id="m-select-emp" name="selected_emp_id"></select>
+                  </label>
+                </div>
+
+                <!-- Section: Identity -->
+                <div class="modal-section" id="m-sec-identity">
+                  <p class="modal-section-label">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    Identity
+                  </p>
+                  <div class="modal-grid">
+                    <label class="field-label">
+                      Full Name <span class="req">*</span>
+                      <input name="name" id="m-name" type="text" required placeholder="e.g. Ravi Kumar" autocomplete="off">
+                      <span class="field-error" id="err-name"></span>
+                    </label>
+                    <label class="field-label">
+                      Department <span class="req">*</span>
+                      <select name="department" id="m-department">
+                        <option value="Engineering">Engineering</option>
+                        <option value="Design">Design</option>
+                        <option value="Sales">Sales</option>
+                        <option value="Marketing">Marketing</option>
+                        <option value="HR">HR</option>
+                        <option value="Finance">Finance</option>
+                        <option value="Support">Support</option>
+                      </select>
+                    </label>
+                    <label class="field-label">
+                      Designation <span class="req">*</span>
+                      <input name="designation" id="m-designation" type="text" required placeholder="e.g. Software Engineer" autocomplete="off">
+                      <span class="field-error" id="err-designation"></span>
+                    </label>
+                    <label class="field-label">
+                      Email Address <span class="req">*</span>
+                      <input name="email" id="m-email" type="email" required placeholder="name@company.com" autocomplete="off">
+                      <span class="field-error" id="err-email"></span>
+                    </label>
+                    <label class="field-label">
+                      Age
+                      <input name="age" id="m-age" type="number" min="18" max="65" value="28" placeholder="28">
+                    </label>
+                    <label class="field-label">
+                      Experience (years)
+                      <input name="experience" id="m-experience" type="number" min="0" max="40" value="3" placeholder="3">
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Section: Workload -->
+                <div class="modal-section" id="m-sec-workload">
+                  <p class="modal-section-label">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                    Workload Metrics
+                  </p>
+                  <div class="modal-grid">
+                    <label class="field-label">
+                      Work hours / day
+                      <input name="work_hours" id="m-work-hours" type="number" min="4" max="16" step="0.5" value="8">
+                    </label>
+                    <label class="field-label">
+                      Overtime hours / day
+                      <input name="overtime_hours" id="m-overtime" type="number" min="0" max="8" step="0.5" value="0">
+                    </label>
+                    <label class="field-label">
+                      Monthly leave days
+                      <input name="leave_days" id="m-leave" type="number" min="0" max="20" value="2">
+                    </label>
+                    <label class="field-label">
+                      Weekly meeting hours
+                      <input name="meeting_hours" id="m-meetings" type="number" min="0" max="40" value="8">
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Section: Wellness Sliders -->
+                <div class="modal-section" id="m-sec-wellness">
+                  <p class="modal-section-label">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                    Wellness Indicators
+                  </p>
+                  <div class="modal-sliders">
+                    <label class="field-label slider-label">
+                      <span>Task load</span>
+                      <div class="slider-row">
+                        <input name="task_load" id="m-task-load" type="range" min="0" max="100" value="60" class="modal-range">
+                        <span class="range-badge" id="rv-task-load">60</span>
+                      </div>
+                    </label>
+                    <label class="field-label slider-label">
+                      <span>Task completion rate</span>
+                      <div class="slider-row">
+                        <input name="completion_rate" id="m-completion-rate" type="range" min="0" max="100" value="75" class="modal-range">
+                        <span class="range-badge" id="rv-completion-rate">75</span>
+                      </div>
+                    </label>
+                    <label class="field-label slider-label">
+                      <span>Job satisfaction</span>
+                      <div class="slider-row">
+                        <input name="job_satisfaction" id="m-job-satisfaction" type="range" min="0" max="100" value="60" class="modal-range">
+                        <span class="range-badge" id="rv-job-satisfaction">60</span>
+                      </div>
+                    </label>
+                    <label class="field-label slider-label">
+                      <span>Self-reported stress</span>
+                      <div class="slider-row">
+                        <input name="stress_level" id="m-stress-level" type="range" min="0" max="100" value="50" class="modal-range">
+                        <span class="range-badge" id="rv-stress-level">50</span>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Section: Feedback -->
+                <div class="modal-section" id="m-sec-feedback">
+                  <p class="modal-section-label">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    Employee Feedback
+                  </p>
+                  <label class="field-label">
+                    How is the employee feeling? <span style="color:var(--muted)">(used for NLP sentiment)</span>
+                    <textarea name="feedback" id="m-feedback" rows="3" placeholder="e.g. I feel overwhelmed by deadlines and meeting load..."></textarea>
+                  </label>
+                </div>
+
+                <!-- Validation error zone -->
+                <div class="form-error-zone" id="form-error-zone" aria-live="polite"></div>
+              </div>
+
+              <!-- RIGHT — Live Score Preview -->
+              <div class="modal-preview" id="modal-preview">
+                <p class="modal-section-label" style="margin-bottom:16px">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                  Live Burnout Preview
+                </p>
+
+                <div class="msp-ring-wrap">
+                  <div class="msp-ring" id="msp-ring">
+                    <div class="msp-ring-inner">
+                      <strong id="msp-score">—</strong>
+                      <span id="msp-risk-label">Score</span>
+                    </div>
+                  </div>
+                  <span class="risk-pill" id="msp-risk-pill" style="background:var(--muted);margin-top:10px">Not scored</span>
+                </div>
+
+                <div class="msp-drivers" id="msp-drivers">
+                  <p style="color:var(--muted);font-size:.82rem;text-align:center;margin-top:8px">
+                    Fill in the form to see the live prediction.
+                  </p>
+                </div>
+
+                <div class="msp-recs" id="msp-recs"></div>
+
+                <div class="msp-sentiment" id="msp-sentiment"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button class="secondary-btn" type="button" id="cancel-modal-btn">Cancel</button>
+            <button class="primary-btn" type="submit" id="modal-submit-btn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              Add &amp; Score Employee
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ── TOAST ── -->
+    <div class="toast-container" id="toast-container" aria-live="polite"></div>
+
+    <script src="data/sampleData.js"></script>
+    <script src="src/app.js"></script>
+  </body>
+</html>

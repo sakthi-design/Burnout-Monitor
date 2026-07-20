@@ -1,0 +1,49 @@
+{
+  "accuracy": 0.9625,
+  "precision": 0.9634,
+  "recall": 0.9625,
+  "f1_score": 0.9627,
+  "classes": [
+    "Critical",
+    "High",
+    "Low",
+    "Medium"
+  ],
+  "confusion_matrix": [
+    [
+      22,
+      2,
+      0,
+      0
+    ],
+    [
+      1,
+      15,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      20,
+      0
+    ],
+    [
+      0,
+      0,
+      0,
+      20
+    ]
+  ],
+  "feature_importances": {
+    "work_hours": 0.08380335571985527,
+    "overtime_hours": 0.13713162640010024,
+    "leave_days": 0.009471764604714099,
+    "task_load": 0.25789193836922375,
+    "completion_rate": 0.029970598946544625,
+    "meeting_hours": 0.079273174082776,
+    "job_satisfaction": 0.07018318185427277,
+    "stress_level": 0.205903522187443,
+    "sentiment_score": 0.1263708378350703
+  }
+}

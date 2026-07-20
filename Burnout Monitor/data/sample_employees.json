@@ -1,0 +1,47 @@
+[
+  {
+    "id": "EMP-1001",
+    "name": "Aarav Mehta",
+    "department": "Engineering",
+    "designation": "Backend Developer",
+    "work_hours": 9.8,
+    "overtime_hours": 2.4,
+    "leave_days": 1,
+    "task_load": 84,
+    "completion_rate": 76,
+    "meeting_hours": 13,
+    "job_satisfaction": 45,
+    "stress_level": 78,
+    "feedback": "The sprint deadline feels intense and I am tired after long calls."
+  },
+  {
+    "id": "EMP-1003",
+    "name": "Kabir Singh",
+    "department": "Sales",
+    "designation": "Account Executive",
+    "work_hours": 10.4,
+    "overtime_hours": 3.1,
+    "leave_days": 0,
+    "task_load": 91,
+    "completion_rate": 68,
+    "meeting_hours": 19,
+    "job_satisfaction": 34,
+    "stress_level": 86,
+    "feedback": "Targets are overwhelming and I feel exhausted by constant client escalations."
+  },
+  {
+    "id": "EMP-1007",
+    "name": "Dev Patel",
+    "department": "Finance",
+    "designation": "Financial Analyst",
+    "work_hours": 7.8,
+    "overtime_hours": 0.3,
+    "leave_days": 4,
+    "task_load": 46,
+    "completion_rate": 91,
+    "meeting_hours": 5,
+    "job_satisfaction": 82,
+    "stress_level": 29,
+    "feedback": "The workload is balanced and I have enough time to recharge."
+  }
+]

@@ -1,0 +1,4 @@
+[tool.pyrefly]
+python-interpreter-path = "C:\\Users\\sakth\\python_portable\\python.exe"
+disable-search-path-heuristics = true
+search-path = ["."]
